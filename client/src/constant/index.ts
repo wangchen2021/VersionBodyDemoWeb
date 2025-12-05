@@ -1,0 +1,1 @@
+export const CDN = "http://cdn.duguqinchen.com/version_demo"
