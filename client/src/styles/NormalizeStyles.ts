@@ -3,12 +3,18 @@ import { createGlobalStyle } from 'styled-components';
 /** DO NOT ALTER THIS FILE. It is a copy of https://necolas.github.io/normalize.css/ */
 
 export default createGlobalStyle`
+  *{
+    box-sizing: border-box;
+  }
   html {
     line-height: 1.15;
     -webkit-text-size-adjust: 100%;
+    margin: 0;
+    padding: 0;
   }
   body {
     margin: 0;
+    padding: 0;
   }
   main {
     display: block;

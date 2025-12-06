@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-// 导入样式组件（无第三方依赖）
 import {
   GlobalStyle,
   Container,
@@ -23,7 +22,7 @@ import {
   StatsSection,
   Footer,
   MainImg
-} from './style';
+} from './styles';
 import { useNavigate } from 'react-router-dom';
 import { CDN } from '@/constant';
 

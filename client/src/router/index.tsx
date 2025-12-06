@@ -1,6 +1,6 @@
 import { createBrowserRouter, type RouteObject } from "react-router-dom"
-import Index from "@/pages/index"
-import Version from "@/pages/version"
+import Index from "@/pages/Index"
+import Version from "@/pages/Version"
 
 const routes: RouteObject[] = [
     {
