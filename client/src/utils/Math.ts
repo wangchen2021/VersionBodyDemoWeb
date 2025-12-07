@@ -1,6 +1,6 @@
-import type { Vector2D } from "@tensorflow-models/posenet/dist/types";
+import type { Keypoint } from "@tensorflow-models/pose-detection"
 
-export const calculateLengthBetweenToPoints = (p1: Vector2D, p2: Vector2D) => {
+export const calculateLengthBetweenToPoints = (p1: Keypoint, p2: Keypoint) => {
     const { x: x1, y: y1 } = p1
     const { x: x2, y: y2 } = p2
     const diffX = x2 - x1
@@ -18,7 +18,7 @@ export const calculateLengthBetweenToPoints = (p1: Vector2D, p2: Vector2D) => {
  * @param pointB B点坐标
  * @returns 四个顶点坐标（A/B/D/C）
  */
-export const getFourVertices = (pointA: Vector2D, pointB: Vector2D) => {
+export const getFourVertices = (pointA: Keypoint, pointB: Keypoint) => {
     // 1. 计算向量AB的dx、dy和长度
     const abLength = calculateLengthBetweenToPoints(pointA, pointB)
 
@@ -42,14 +42,14 @@ export const getFourVertices = (pointA: Vector2D, pointB: Vector2D) => {
     // 3. 计算C点（+45°，长度=AB/6）
     const rad45 = Math.PI / 4; // 45°弧度
     const cLen = abLength / 6;
-    const pointC: Vector2D = {
+    const pointC: Keypoint = {
         x: pointA.x + (unitDx * Math.cos(rad45) - unitDy * Math.sin(rad45)) * cLen,
         y: pointA.y + (unitDx * Math.sin(rad45) + unitDy * Math.cos(rad45)) * cLen
     };
 
     // 4. 计算D点（-45°，长度=AB/6）
     const radMinus45 = -Math.PI / 4; // -45°弧度
-    const pointD: Vector2D = {
+    const pointD: Keypoint = {
         x: pointA.x + (unitDx * Math.cos(radMinus45) - unitDy * Math.sin(radMinus45)) * cLen,
         y: pointA.y + (unitDx * Math.sin(radMinus45) + unitDy * Math.cos(radMinus45)) * cLen
     };
@@ -72,7 +72,7 @@ export const getFourVertices = (pointA: Vector2D, pointB: Vector2D) => {
  * @param pointB B点坐标
  * @returns 4个点的坐标数组（按距A由近到远排序）
  */
-export const getFourPointsOnTwoPoints = (pointA: Vector2D, pointB: Vector2D): Vector2D[] => {
+export const getFourPointsOnTwoPoints = (pointA: Keypoint, pointB: Keypoint): Keypoint[] => {
     // 1. 计算AB向量的dx、dy和总长度
     const dx = pointB.x - pointA.x;
     const dy = pointB.y - pointA.y;
@@ -97,19 +97,19 @@ export const getFourPointsOnTwoPoints = (pointA: Vector2D, pointB: Vector2D): Ve
     const len4 = abTotalLength;  // 第4个点=B点（距A总长度）
 
     // 4. 计算4个点的坐标
-    const point1: Vector2D = {
+    const point1: Keypoint = {
         x: pointA.x + unitDx * len1,
         y: pointA.y + unitDy * len1
     };
-    const point2: Vector2D = {
+    const point2: Keypoint = {
         x: pointA.x + unitDx * len2,
         y: pointA.y + unitDy * len2
     };
-    const point3: Vector2D = {
+    const point3: Keypoint = {
         x: pointA.x + unitDx * len3,
         y: pointA.y + unitDy * len3
     };
-    const point4: Vector2D = {
+    const point4: Keypoint = {
         x: pointA.x + unitDx * len4,
         y: pointA.y + unitDy * len4
     };

@@ -14,7 +14,7 @@ const finishText = "GO!"
 
 const Countdown = forwardRef<CountdownExpose, CountdownProps>((props, ref) => {
 
-    const timerRef = useRef<NodeJS.Timeout | null>(null)
+    const timerRef = useRef<NodeJS.Timeout>(null)
     const [count, setCount] = useState(props.time)
     const [finishFlag, setFinishFlag] = useState(false)
 

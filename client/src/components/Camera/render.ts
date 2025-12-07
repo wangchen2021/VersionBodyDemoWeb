@@ -1,7 +1,5 @@
 import { calculateLengthBetweenToPoints, getFourPointsOnTwoPoints, getFourVertices } from "@/utils/Math"
-import type { Keypoint } from "@tensorflow-models/posenet"
-import type { Vector2D } from "@tensorflow-models/posenet/dist/types"
-
+import type { Keypoint } from "@tensorflow-models/pose-detection";
 export class Render {
     canvas!: HTMLCanvasElement
     ctx!: CanvasRenderingContext2D
@@ -47,16 +45,16 @@ export class Render {
         const len = points.length
         for (let i = 0; i < len; i++) {
             const point = points[i]
-            pointsArr.push(point.position)
-            if (point.score < this.scoreLine || i < 5) continue
-            const { x, y } = point.position
+            pointsArr.push(point)
+            if (!point.score || point.score < this.scoreLine || i < 5) continue
+            const { x, y } = point
             const { x: dx, y: dy } = this.getDrawXY(x, y)
             this.renderDot(dx, dy)
         }
 
         //添加肩膀中心点[17]
-        const pointsLeftShoulder = points[6].position
-        const pointsRightShoulder = points[5].position
+        const pointsLeftShoulder = points[6]
+        const pointsRightShoulder = points[5]
         const shoulderLength = calculateLengthBetweenToPoints(pointsLeftShoulder, pointsRightShoulder)
         const centerPoint = {
             x: (pointsLeftShoulder.x + pointsRightShoulder.x) / 2,
@@ -67,8 +65,8 @@ export class Render {
         this.renderDot(cx, cy)
 
         //添加腰中心点[18]
-        const pointsLeftLum = points[12].position
-        const pointsRightLum = points[11].position
+        const pointsLeftLum = points[12]
+        const pointsRightLum = points[11]
         const lumCenterPoint = {
             x: (pointsLeftLum.x + pointsRightLum.x) / 2,
             y: (pointsLeftLum.y + pointsRightLum.y) / 2,
@@ -96,7 +94,7 @@ export class Render {
         ctx.fill()
     }
 
-    renderSection(ps: Vector2D, pe: Vector2D) {
+    renderSection(ps: Keypoint, pe: Keypoint) {
         ps = this.getDrawXY(ps.x, ps.y)
         pe = this.getDrawXY(pe.x, pe.y)
         const { A, B, C, D } = getFourVertices(ps, pe)

@@ -22,7 +22,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": [
+ "include": [
     "vite.config.ts",
     "src/types/**/*.d.ts" // 确保应用代码能识别自定义类型
   ]

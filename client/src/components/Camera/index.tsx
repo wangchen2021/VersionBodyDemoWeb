@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from 'react'
-import * as tf from '@tensorflow/tfjs';
-import * as posenet from '@tensorflow-models/posenet';
-import { isMobile } from 'react-device-detect';
 import { Canvas, Container, Video } from './styles';
 import { Render } from './render';
+import * as poseDetection from '@tensorflow-models/pose-detection';
+import * as tf from '@tensorflow/tfjs-core';
 
+// Register WebGL backend.
+import '@tensorflow/tfjs-backend-webgl';
 const FPS = 20
 const videoWidth = 500
 const videoHeight = 500
@@ -13,7 +14,7 @@ const videoRatio = videoWidth / videoHeight
 const Camera: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null)
     const videoRef = useRef<HTMLVideoElement>(null);
-    const posenetModelRef = useRef<posenet.PoseNet>(null);
+    const modelRef = useRef<poseDetection.PoseDetector>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const isDetecting = useRef(false)
     const render = useRef<Render>(null)
@@ -71,15 +72,15 @@ const Camera: React.FC = () => {
     }
 
     const detectPose = async () => {
-        if (!posenetModelRef.current || !isDetecting.current) return;
+        if (!modelRef.current || !isDetecting.current || !render.current) return;
         try {
             const video = videoRef.current;
             if (!video) return
             // 检测人体关键点（singlePerson: true 检测单人，false 检测多人）
-            const pose = await posenetModelRef.current.estimateSinglePose(video, {
+            const pose = await modelRef.current.estimatePoses(video, {
                 flipHorizontal: true,
             });
-            render.current?.renderFrame(pose.keypoints)
+            render.current.renderFrame(pose[0].keypoints)
         } catch (err) {
             console.error('detect fail', err);
         }
@@ -127,13 +128,15 @@ const Camera: React.FC = () => {
             try {
                 await tf.setBackend('webgl');
                 await tf.ready();
-                posenetModelRef.current = await posenet.load({
-                    architecture: 'ResNet50',
-                    outputStride: 16,
-                    inputResolution: { width: videoWidth, height: videoHeight },
-                    multiplier: isMobile ? 0.75 : 1.0,
-                    quantBytes: 4
-                });
+                modelRef.current = await poseDetection.createDetector(
+                    poseDetection.SupportedModels.MoveNet,
+                    {
+                        modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
+                        enableTracking: true,
+                        trackerType: poseDetection.TrackerType.BoundingBox,
+                        enableSmoothing: true
+                    }
+                );
                 console.log("load finish");
                 toggleCamera()
             } catch (err) {
