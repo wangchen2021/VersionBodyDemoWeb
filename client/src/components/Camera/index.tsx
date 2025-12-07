@@ -5,10 +5,11 @@ import { isMobile } from 'react-device-detect';
 import { Canvas, Container, Video } from './styles';
 import { Render } from './render';
 
-const videoWidth = 640
-const videoHeight = 480
-const videoRatio = videoWidth / videoHeight
 const FPS = 20
+const videoWidth = 500
+const videoHeight = 500
+const videoRatio = videoWidth / videoHeight
+
 const Camera: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null)
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -127,7 +128,7 @@ const Camera: React.FC = () => {
                 await tf.setBackend('webgl');
                 await tf.ready();
                 posenetModelRef.current = await posenet.load({
-                    architecture: isMobile ? 'MobileNetV1' : 'ResNet50',
+                    architecture: 'ResNet50',
                     outputStride: 16,
                     inputResolution: { width: videoWidth, height: videoHeight },
                     multiplier: isMobile ? 0.75 : 1.0,
