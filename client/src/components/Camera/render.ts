@@ -1,4 +1,4 @@
-import { calculateLengthBetweenToPoints, getFourPointsOnTwoPoints, getFourVertices } from "@/utils/Math"
+import { calculateLengthBetweenToPoints, getFourPointsOnTwoPoints, getFourVertices } from "@/shared/utils/Math"
 import type { Keypoint } from "@tensorflow-models/pose-detection";
 export class Render {
     canvas!: HTMLCanvasElement

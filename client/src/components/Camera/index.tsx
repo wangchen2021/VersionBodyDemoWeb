@@ -1,11 +1,8 @@
 import React, { useEffect, useRef } from 'react'
 import { Canvas, Container, Video } from './styles';
 import { Render } from './render';
-import * as poseDetection from '@tensorflow-models/pose-detection';
-import * as tf from '@tensorflow/tfjs-core';
+import { GlobalDetector } from '../../shared/detector';
 
-// Register WebGL backend.
-import '@tensorflow/tfjs-backend-webgl';
 const FPS = 20
 const videoWidth = 500
 const videoHeight = 500
@@ -14,11 +11,11 @@ const videoRatio = videoWidth / videoHeight
 const Camera: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null)
     const videoRef = useRef<HTMLVideoElement>(null);
-    const modelRef = useRef<poseDetection.PoseDetector>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const isDetecting = useRef(false)
     const render = useRef<Render>(null)
     const detectTimer = useRef<NodeJS.Timeout>(null)
+    const detector = useRef(new GlobalDetector())
 
     const clean = () => {
         const video = videoRef.current;
@@ -72,15 +69,13 @@ const Camera: React.FC = () => {
     }
 
     const detectPose = async () => {
-        if (!modelRef.current || !isDetecting.current || !render.current) return;
+        if (!isDetecting.current || !render.current) return;
         try {
             const video = videoRef.current;
             if (!video) return
             // 检测人体关键点（singlePerson: true 检测单人，false 检测多人）
-            const pose = await modelRef.current.estimatePoses(video, {
-                flipHorizontal: true,
-            });
-            render.current.renderFrame(pose[0].keypoints)
+            const pose = await detector.current.detectVideo(video)
+            if (pose[0] && pose[0].keypoints) render.current.renderFrame(pose[0].keypoints)
         } catch (err) {
             console.error('detect fail', err);
         }
@@ -124,26 +119,14 @@ const Camera: React.FC = () => {
     }
 
     useEffect(() => {
-        const loadPosenet = async () => {
-            try {
-                await tf.setBackend('webgl');
-                await tf.ready();
-                modelRef.current = await poseDetection.createDetector(
-                    poseDetection.SupportedModels.MoveNet,
-                    {
-                        modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
-                        enableTracking: true,
-                        trackerType: poseDetection.TrackerType.BoundingBox,
-                        enableSmoothing: true
-                    }
-                );
-                console.log("load finish");
+        const initCamera = () => {
+            if (!detector.current.isInit) {
+                detector.current.bindFinish(toggleCamera, [], this)
+            } else {
                 toggleCamera()
-            } catch (err) {
-                console.error('load error', err);
             }
-        };
-        loadPosenet();
+        }
+        initCamera()
         return () => {
             clean()
         }
