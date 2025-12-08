@@ -1,4 +1,5 @@
 export const VersionStatusTypes = {
+    WAIT_INIT: -1,
     CV_CHECK_WRONG: 0,
     CV_CHECK_RIGHT: 1,
     CV_CHECK_FINISH: 2,

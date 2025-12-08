@@ -4,7 +4,6 @@ import { Render } from '../../pages/Version/app/render';
 import { GlobalDetector } from '../../pages/Version/app/detector';
 import type { VersionStatus } from '@/pages/Version/app/versionStatus';
 
-const FPS = 20
 const videoWidth = 500
 const videoHeight = 500
 const videoRatio = videoWidth / videoHeight
@@ -54,7 +53,6 @@ const Camera: React.FC<CameraProps> = ({ versionStatus, onload }) => {
                 video.play();
                 isDetecting.current = true
                 video.oncanplaythrough = () => {
-                    console.log("start detect");
                     window.addEventListener("resize", windowReSize)
                     initRender();
                     windowReSize()
@@ -72,22 +70,8 @@ const Camera: React.FC<CameraProps> = ({ versionStatus, onload }) => {
     };
 
     const startDetect = () => {
-        detectTimer.current = setInterval(() => {
-            detectPose()
-        }, 1000 / FPS)
-    }
-
-    const detectPose = async () => {
-        if (!isDetecting.current || !render.current) return;
-        try {
-            const video = videoRef.current;
-            if (!video) return
-            // 检测人体关键点（singlePerson: true 检测单人，false 检测多人）
-            const pose = await detector.current.detectVideo(video)
-            render.current.clean()
-            if (pose[0] && pose[0].keypoints) render.current.renderFrame(pose[0].keypoints)
-        } catch (err) {
-            console.error('detect fail', err);
+        if (videoRef.current) {
+            detector.current.setSource(videoRef.current)
         }
     }
 

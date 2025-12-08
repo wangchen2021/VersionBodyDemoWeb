@@ -3,6 +3,7 @@ import * as tf from '@tensorflow/tfjs-core';
 // Register WebGL backend.
 import '@tensorflow/tfjs-backend-webgl';
 import { calculateLengthBetweenToPoints, getFourPointsOnTwoPoints } from '../../../shared/utils/Math';
+import { CDN } from '@/constant';
 
 class Detector {
     static instance: Detector
@@ -10,6 +11,10 @@ class Detector {
     isInit = false
     task: Function[] = []
     pose: poseDetection.Pose[] = []
+    source: HTMLVideoElement | null = null
+    FPS = 20
+    detectorTimer: NodeJS.Timeout | null = null
+    detectCallback: Array<(pose: poseDetection.Pose[]) => any> = []
 
     init() {
         return new Promise(async (resolve, reject) => {
@@ -20,7 +25,8 @@ class Detector {
                     poseDetection.SupportedModels.MoveNet,
                     {
                         modelType: poseDetection.movenet.modelType.SINGLEPOSE_THUNDER,
-                        enableSmoothing: true
+                        enableSmoothing: true,
+                        modelUrl: CDN + "/movenet-tfjs-singlepose-thunder-v4/model.json",
                     }
                 );
                 console.log("load finish");
@@ -32,6 +38,37 @@ class Detector {
                 reject(err)
             }
         })
+    }
+
+    setSource(src: HTMLVideoElement) {
+        this.source = src
+    }
+
+    startDetect() {
+        console.log("start detect");
+        this.detectorTimer = setInterval(() => {
+            this.detectPose()
+        }, 1000 / this.FPS)
+    }
+
+    async detectPose() {
+        try {
+            const video = this.source
+            if (!video) return
+            await this.detectVideo(video)
+            this.triggerDetectCallbacks()
+        } catch (err) {
+            console.error('detect fail', err);
+        }
+    }
+
+    bindDetect(fn: (pose: poseDetection.Pose[]) => any) {
+        this.detectCallback.push(fn)
+    }
+
+    triggerDetectCallbacks() {
+        const { pose } = this
+        this.detectCallback.forEach(fn => fn(pose))
     }
 
     async detectVideo(video: HTMLVideoElement) {
@@ -77,6 +114,17 @@ class Detector {
         while (this.task.length > 0) {
             const callback = this.task.shift()
             callback && callback()
+        }
+    }
+
+    destroy() {
+        if (this.detectorTimer) {
+            clearInterval(this.detectorTimer)
+            this.detectorTimer = null
+            this.modelRef.dispose()
+            this.isInit = false
+            this.source = null
+            this.pose = []
         }
     }
 }

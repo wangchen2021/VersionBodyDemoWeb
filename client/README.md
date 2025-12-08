@@ -1,5 +1,2 @@
-# posenet
-https://github.com/tensorflow/tfjs-models/tree/master/pose-detection/src/posenet
-
-# keyPoints
+# poseDetect
 https://github.com/tensorflow/tfjs-models/tree/master/pose-detection

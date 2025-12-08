@@ -5,7 +5,7 @@ import { VersionStatus } from './app/versionStatus'
 import { blackBoardSubTitle } from './config/subtitle'
 import Camera from '@/components/Camera'
 import { VersionStatusTypes } from './config/status'
-import { motion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 
 const readyFinish = () => {
     console.log("ready");
@@ -22,11 +22,12 @@ const Version: React.FC = () => {
     }
 
     const nextStatus = () => {
-        setStatus(status + 1)
+        console.log("next");
+        setStatus(versionStatus.current.status)
     }
 
     useEffect(() => {
-        versionStatus.current.bindNextCallback(nextStatus)
+        versionStatus.current.bindNextCallback(nextStatus.bind(this))
     }, [])
 
     return (
@@ -37,15 +38,21 @@ const Version: React.FC = () => {
             <Guide>
                 {status <= VersionStatusTypes.START ?
                     <BlackBoard>
-                        <motion.span
-                            key={status}
-                            initial={{ y: 800, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: -800, opacity: 0 }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            {blackBoardSubTitle[status]}
-                        </motion.span>
+                        <AnimatePresence>
+                            <motion.span
+                                key={status}
+                                initial={{ y: 800, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{
+                                    duration: 0.5,
+                                    type: "spring",
+                                    stiffness: 100,
+                                    damping: 20
+                                }}
+                            >
+                                {blackBoardSubTitle[status]}
+                            </motion.span>
+                        </AnimatePresence>
                     </BlackBoard>
                     :
                     <video></video>

@@ -2,6 +2,7 @@ import type { Render } from "@/pages/Version/app/render"
 import { GlobalDetector } from "@/pages/Version/app/detector"
 import { StatusFrameColors } from "../config/colors"
 import { VersionStatusTypes } from "../config/status"
+import * as poseDetection from '@tensorflow-models/pose-detection';
 
 //状态机
 export class VersionStatus {
@@ -9,18 +10,15 @@ export class VersionStatus {
     static scoreCvLine = 0.5
 
     detector: InstanceType<typeof GlobalDetector> = new GlobalDetector()
-    status = VersionStatusTypes.CV_CHECK_WRONG
-    taskTimer: NodeJS.Timeout | null = null
+    status = VersionStatusTypes.WAIT_INIT
     render: Render | null = null
     checkFps = 5
     nextCallback: Function[] = []
+    pose: poseDetection.Pose[] = []
 
     constructor() {
-        this.status = VersionStatusTypes.CV_CHECK_WRONG
-    }
-
-    bindRender(render: Render) {
-        this.render = render
+        this.status = VersionStatusTypes.WAIT_INIT
+        this.detector.bindDetect(this.updatePose.bind(this))
     }
 
     start() {
@@ -29,7 +27,27 @@ export class VersionStatus {
         } else if (!this.detector || !this.detector.isInit) {
             console.error("detector not init");
         }
+        this.next()
+        this.detector.startDetect()
+    }
+
+    bindRender(render: Render) {
+        this.render = render
+    }
+
+    updatePose(pose: poseDetection.Pose[]) {
+        this.pose = pose
+        this.renderCamera()
         this.processStatus()
+    }
+
+    renderCamera() {
+        const { pose } = this
+        const render = this.render
+        if (render) {
+            render.clean()
+            if (pose[0] && pose[0].keypoints) render.renderFrame(pose[0].keypoints)
+        }
     }
 
     processStatus() {
@@ -43,16 +61,13 @@ export class VersionStatus {
     }
 
     cvCheckWrong() {
-        this.taskTimer = setInterval(() => {
-            const allPoints = this.detector.pose[0].keypoints
-            const points = [allPoints[5], allPoints[6], allPoints[10], allPoints[9], allPoints[12], allPoints[11]]
-            // const points = [allPoints[5], allPoints[6], allPoints[10], allPoints[9], allPoints[12], allPoints[11], allPoints[15], allPoints[16]]
-            if (!points.some(point => !point.score || point.score < VersionStatus.scoreCvLine)) {
-                this.next()
-                clearInterval(this.taskTimer!)
-                this.taskTimer = null
-            }
-        }, 1000 / this.checkFps)
+        const allPoints = this.pose[0]?.keypoints || []
+        if (allPoints.length === 0) return;
+        const points = [allPoints[5], allPoints[6], allPoints[10], allPoints[9], allPoints[12], allPoints[11]]
+        // const points = [allPoints[5], allPoints[6], allPoints[10], allPoints[9], allPoints[12], allPoints[11], allPoints[15], allPoints[16]]
+        if (!points.some(point => !point.score || point.score < VersionStatus.scoreCvLine)) {
+            this.next()
+        }
     }
 
     updateFrameColor() {
@@ -67,7 +82,6 @@ export class VersionStatus {
             console.warn(`Status is already set as finish`);
         }
         this.triggerNextCallbacks()
-        this.processStatus()
         return this
     }
 
