@@ -22,7 +22,6 @@ const Version: React.FC = () => {
     }
 
     const nextStatus = () => {
-        console.log("next");
         setStatus(versionStatus.current.status)
     }
 
