@@ -2,12 +2,14 @@ import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as tf from '@tensorflow/tfjs-core';
 // Register WebGL backend.
 import '@tensorflow/tfjs-backend-webgl';
+import { calculateLengthBetweenToPoints, getFourPointsOnTwoPoints } from '../../../shared/utils/Math';
 
 class Detector {
     static instance: Detector
     modelRef!: poseDetection.PoseDetector
     isInit = false
     task: Function[] = []
+    pose: poseDetection.Pose[] = []
 
     init() {
         return new Promise(async (resolve, reject) => {
@@ -36,6 +38,34 @@ class Detector {
         const pose = await this.modelRef.estimatePoses(video, {
             flipHorizontal: false,
         });
+        let points = pose[0]?.keypoints;
+        if (points) {
+
+            //添加颈部中心点 [17]
+            const pointsLeftShoulder = points[6]
+            const pointsRightShoulder = points[5]
+            const shoulderLength = calculateLengthBetweenToPoints(pointsLeftShoulder, pointsRightShoulder)
+            const centerPoint = {
+                x: (pointsLeftShoulder.x + pointsRightShoulder.x) / 2,
+                y: (pointsLeftShoulder.y + pointsRightShoulder.y) / 2 - shoulderLength / 6,
+            }
+            points.push(centerPoint)
+
+            //添加腰中心点 [18]
+            const pointsLeftLum = points[12]
+            const pointsRightLum = points[11]
+            const lumCenterPoint = {
+                x: (pointsLeftLum.x + pointsRightLum.x) / 2,
+                y: (pointsLeftLum.y + pointsRightLum.y) / 2,
+            }
+            points.push(lumCenterPoint)
+
+            //获取脊柱点 [19,20,21,22]
+            const spinePoints = getFourPointsOnTwoPoints(centerPoint, lumCenterPoint)
+            points.push(...spinePoints)
+
+        }
+        this.pose = pose
         return pose
     }
 

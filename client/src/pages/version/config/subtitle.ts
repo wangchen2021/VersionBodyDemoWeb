@@ -1,7 +1,7 @@
-import { VersionStatus } from "./status";
+import { VersionStatusTypes } from "../config/status";
 
 export const blackBoardSubTitle = {
-    [VersionStatus.CV_CHECK_WRONG]: "Stand up and start moving backwards",
-    [VersionStatus.CV_CHECK_RIGHT]: "Great! That's the spot!",
-    [VersionStatus.CV_CHECK_FINISH]: "Let's start!",
+    [VersionStatusTypes.CV_CHECK_WRONG]: "Stand up and start moving backwards",
+    [VersionStatusTypes.CV_CHECK_RIGHT]: "Great! That's the spot!",
+    [VersionStatusTypes.CV_CHECK_FINISH]: "Let's start!",
 }

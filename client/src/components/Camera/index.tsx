@@ -1,14 +1,20 @@
 import React, { useEffect, useRef } from 'react'
 import { Canvas, Container, Video } from './styles';
-import { Render } from './render';
-import { GlobalDetector } from '../../shared/detector';
+import { Render } from '../../pages/Version/app/render';
+import { GlobalDetector } from '../../pages/Version/app/detector';
+import type { VersionStatus } from '@/pages/Version/app/versionStatus';
 
 const FPS = 20
 const videoWidth = 500
 const videoHeight = 500
 const videoRatio = videoWidth / videoHeight
 
-const Camera: React.FC = () => {
+interface CameraProps {
+    versionStatus: VersionStatus
+    onload?: Function
+}
+
+const Camera: React.FC<CameraProps> = ({ versionStatus, onload }) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -53,6 +59,9 @@ const Camera: React.FC = () => {
                     initRender();
                     windowReSize()
                     startDetect()
+                    if (onload) {
+                        onload()
+                    }
                 };
             }
         } catch (err) {
@@ -75,6 +84,7 @@ const Camera: React.FC = () => {
             if (!video) return
             // 检测人体关键点（singlePerson: true 检测单人，false 检测多人）
             const pose = await detector.current.detectVideo(video)
+            render.current.clean()
             if (pose[0] && pose[0].keypoints) render.current.renderFrame(pose[0].keypoints)
         } catch (err) {
             console.error('detect fail', err);
@@ -87,6 +97,7 @@ const Camera: React.FC = () => {
         if (canvas && video) {
             const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
             render.current = new Render(canvas, ctx)
+            versionStatus.bindRender(render.current)
         } else {
             console.error("no canvas or video instance");
         }
