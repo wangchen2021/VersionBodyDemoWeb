@@ -1,38 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer, VideoGuide, InfoContainer } from "./styles"
 import Countdown, { type CountdownExpose } from '@/components/Countdown'
-import { VersionStatus } from './app/versionStatus'
-import Camera from '@/components/Camera'
-import { AnimatePresence, motion, type Variants } from "motion/react"
-import Scanner from '@/components/Scanner'
+import { VersionStatus } from './app'
+import { AnimatePresence, motion } from "motion/react"
 import { plans, VersionStatusTypes, blackBoardSubTitle } from './config'
 import Mask from '@/components/Mask'
+import Scanner from '@/components/Scanner'
+import Camera from '@/components/Camera'
 
 const readyFinish = () => {
     console.log("ready");
 }
-
-const containerVariants: Variants = {
-    initial: { opacity: 0 },
-    animate: {
-        opacity: 1,
-        // 关键：让子元素继承动画，且延迟为 0（同步启动）
-        transition: {
-            duration: 0.5,
-            staggerChildren: 0, // 取消子元素延迟，强制同步
-            ease: "easeOut",
-        },
-    },
-};
-
-const itemVariants: Variants = {
-    initial: { opacity: 0, y: 10 }, // 可选：加轻微 translateY 增强层次感
-    animate: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.5, ease: "easeOut" },
-    },
-};
 
 const Version: React.FC = () => {
     const countdownRef = useRef<CountdownExpose>(null)
@@ -75,7 +53,7 @@ const Version: React.FC = () => {
     return (
         <Container>
             <CameraContainer>
-                <Camera onload={start} versionStatus={versionStatus.current}></Camera>
+                <Camera videoWidth={500} videoHeight={500} onload={start} versionStatus={versionStatus.current}></Camera>
                 {status === VersionStatusTypes.START
                     &&
                     <Scanner
@@ -85,17 +63,17 @@ const Version: React.FC = () => {
                     </Scanner>
                 }
                 <Mask>
-                    <InfoContainer initial="initial" animate="animate" variants={containerVariants}>
-                        <motion.div variants={itemVariants} className='l1'>COMING NEXT</motion.div>
-                        <motion.div variants={itemVariants} className='l2'>{versionStatus.current.plan?.name}</motion.div>
-                        <motion.div variants={itemVariants}>
-                            <motion.div variants={itemVariants}>
+                    <InfoContainer initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                        <div className='l1'>COMING NEXT</div>
+                        <div className='l2'>{versionStatus.current.plan?.name}</div>
+                        <div>
+                            <div>
                                 {versionStatus.current.plan?.seconds}
-                            </motion.div>
-                            <motion.div variants={itemVariants}>
+                            </div>
+                            <div>
                                 {versionStatus.current.plan?.reps}
-                            </motion.div>
-                        </motion.div>
+                            </div>
+                        </div>
                     </InfoContainer>
                 </Mask>
             </CameraContainer>

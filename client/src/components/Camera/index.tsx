@@ -4,16 +4,15 @@ import { Render } from '../../pages/Version/app/render';
 import { GlobalDetector } from '../../pages/Version/app/detector';
 import type { VersionStatus } from '@/pages/Version/app/versionStatus';
 
-const videoWidth = 500
-const videoHeight = 500
-const videoRatio = videoWidth / videoHeight
 
 interface CameraProps {
     versionStatus: VersionStatus
     onload?: Function
+    videoWidth?: number
+    videoHeight?: number
 }
 
-const Camera: React.FC<CameraProps> = memo(({ versionStatus, onload }) => {
+const Camera: React.FC<CameraProps> = memo(({ versionStatus, onload, videoHeight = 500, videoWidth = 500 }) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -21,6 +20,7 @@ const Camera: React.FC<CameraProps> = memo(({ versionStatus, onload }) => {
     const render = useRef<Render>(null)
     const detectTimer = useRef<NodeJS.Timeout>(null)
     const detector = useRef(new GlobalDetector())
+    const videoRatio = videoWidth / videoHeight
 
     const clean = () => {
         const video = videoRef.current;
