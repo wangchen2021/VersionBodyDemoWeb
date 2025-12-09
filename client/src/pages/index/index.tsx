@@ -26,7 +26,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { CDN } from '@/constant';
 
-// 课程数据类型
 interface ClassType {
   id: number;
   title: string;
@@ -47,7 +46,6 @@ const HomePage: React.FC = () => {
   // 移动端菜单状态
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // 模拟课程数据（图片地址留空，用样式占位）
   const [classes, _setClasses] = useState<ClassType[]>([
     {
       id: 1,
