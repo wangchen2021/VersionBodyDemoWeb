@@ -3,6 +3,7 @@ import { GlobalDetector } from "@/pages/Version/app/detector"
 import { StatusFrameColors } from "../config/colors"
 import { VersionStatusTypes } from "../config/status"
 import * as poseDetection from '@tensorflow-models/pose-detection';
+import type { EstimatePlan } from "../config/plan";
 
 //状态机
 export class VersionStatus {
@@ -16,6 +17,7 @@ export class VersionStatus {
     nextCallback: Function[] = []
     pose: poseDetection.Pose[] = []
     taskTimer: NodeJS.Timeout | null = null
+    plan: EstimatePlan | null = null
 
     constructor() {
         this.status = VersionStatusTypes.WAIT_INIT
@@ -30,6 +32,10 @@ export class VersionStatus {
         }
         this.next()
         this.detector.startDetect()
+    }
+
+    bindPlan(plan: EstimatePlan) {
+        this.plan = plan
     }
 
     bindRender(render: Render) {

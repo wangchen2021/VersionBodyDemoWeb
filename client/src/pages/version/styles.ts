@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import styled from "styled-components";
 
 export const Container = styled.div`
@@ -40,4 +41,27 @@ export const BlackBoard = styled.div`
     padding: 0 20px;
     text-align: center;
     text-shadow: 0 7px 2px rgb(8, 8, 8); 
+`
+
+export const VideoGuide = styled.video`
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: #2e2e2e;
+`
+
+export const InfoContainer = styled(motion.div)`
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    color: white;
+    .l1{
+        font-size: 55px;
+        margin-top: 150px;
+        color: #ebebeb;
+    }
+    .l2{
+        font-size: 55px;
+        margin-top: 20px;
+    }
 `

@@ -1,22 +1,45 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer } from "./styles"
+import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer, VideoGuide, InfoContainer } from "./styles"
 import Countdown, { type CountdownExpose } from '@/components/Countdown'
 import { VersionStatus } from './app/versionStatus'
-import { blackBoardSubTitle } from './config/subtitle'
 import Camera from '@/components/Camera'
-import { VersionStatusTypes } from './config/status'
-import { AnimatePresence, motion } from "motion/react"
+import { AnimatePresence, motion, type Variants } from "motion/react"
 import Scanner from '@/components/Scanner'
+import { plans, VersionStatusTypes, blackBoardSubTitle } from './config'
+import Mask from '@/components/Mask'
 
 const readyFinish = () => {
     console.log("ready");
 }
+
+const containerVariants: Variants = {
+    initial: { opacity: 0 },
+    animate: {
+        opacity: 1,
+        // 关键：让子元素继承动画，且延迟为 0（同步启动）
+        transition: {
+            duration: 0.5,
+            staggerChildren: 0, // 取消子元素延迟，强制同步
+            ease: "easeOut",
+        },
+    },
+};
+
+const itemVariants: Variants = {
+    initial: { opacity: 0, y: 10 }, // 可选：加轻微 translateY 增强层次感
+    animate: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.5, ease: "easeOut" },
+    },
+};
 
 const Version: React.FC = () => {
     const countdownRef = useRef<CountdownExpose>(null)
     const versionStatus = useRef(new VersionStatus())
     const [status, setStatus] = useState(versionStatus.current.status)
     const scannerPosition = useRef<{ left: number, width: number }>({ left: 0, width: 0 })
+    const videoGuideRef = useRef<HTMLVideoElement>(null)
 
     const start = () => {
         versionStatus.current.start()
@@ -45,6 +68,7 @@ const Version: React.FC = () => {
     }
 
     useEffect(() => {
+        versionStatus.current.bindPlan(plans.Squat)
         versionStatus.current.bindNextCallback(updateStatus.bind(this))
     }, [])
 
@@ -60,6 +84,20 @@ const Version: React.FC = () => {
                         onFinish={finishScan}>
                     </Scanner>
                 }
+                <Mask>
+                    <InfoContainer initial="initial" animate="animate" variants={containerVariants}>
+                        <motion.div variants={itemVariants} className='l1'>COMING NEXT</motion.div>
+                        <motion.div variants={itemVariants} className='l2'>{versionStatus.current.plan?.name}</motion.div>
+                        <motion.div variants={itemVariants}>
+                            <motion.div variants={itemVariants}>
+                                {versionStatus.current.plan?.seconds}
+                            </motion.div>
+                            <motion.div variants={itemVariants}>
+                                {versionStatus.current.plan?.reps}
+                            </motion.div>
+                        </motion.div>
+                    </InfoContainer>
+                </Mask>
             </CameraContainer>
             <Guide>
                 {status <= VersionStatusTypes.START ?
@@ -81,7 +119,7 @@ const Version: React.FC = () => {
                         </AnimatePresence>
                     </BlackBoard>
                     :
-                    <video></video>
+                    <VideoGuide ref={videoGuideRef} src={versionStatus.current.plan?.videoSrc}></VideoGuide>
                 }
             </Guide>
             {

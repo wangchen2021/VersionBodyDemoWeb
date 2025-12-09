@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { memo, useEffect, useRef } from 'react'
 import { Canvas, Container, Video } from './styles';
 import { Render } from '../../pages/Version/app/render';
 import { GlobalDetector } from '../../pages/Version/app/detector';
@@ -13,7 +13,7 @@ interface CameraProps {
     onload?: Function
 }
 
-const Camera: React.FC<CameraProps> = ({ versionStatus, onload }) => {
+const Camera: React.FC<CameraProps> = memo(({ versionStatus, onload }) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -133,6 +133,6 @@ const Camera: React.FC<CameraProps> = ({ versionStatus, onload }) => {
             <Canvas ref={canvasRef} width={videoWidth} height={videoHeight}></Canvas>
         </Container>
     )
-}
+})
 
 export default Camera
