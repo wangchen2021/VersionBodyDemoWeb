@@ -5,4 +5,5 @@ export const blackBoardSubTitle = {
     [VersionStatusTypes.CV_CHECK_WRONG]: "Stand up and start moving backwards",
     [VersionStatusTypes.CV_CHECK_RIGHT]: "Great! That's the spot!",
     [VersionStatusTypes.CV_CHECK_FINISH]: "Let's start!",
+    [VersionStatusTypes.START]: "Let's start!",
 }

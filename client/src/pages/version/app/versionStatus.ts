@@ -71,6 +71,9 @@ export class VersionStatus {
             case VersionStatusTypes.START:
                 //wait render
                 break
+            case VersionStatusTypes.SHOW_INFO:
+                this.waitInfoShow()
+                break
         }
     }
 
@@ -84,10 +87,19 @@ export class VersionStatus {
         }
     }
 
+    waitInfoShow() {
+        if (this.taskTimer) return
+        this.taskTimer = setTimeout(() => {
+            this.next()
+            this.taskTimer = null
+        }, 5000);
+    }
+
     keepRightPose() {
         if (this.taskTimer) return
         this.taskTimer = setTimeout(() => {
             this.next()
+            this.taskTimer = null
         }, 2000)
     }
 

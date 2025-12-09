@@ -16,8 +16,8 @@ const RotateAnimation = keyframes`
 
 export const Container = styled.div`
     position: relative;
-    width: 150px;
-    height: 150px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
     background-color: #000000a0;
     display: flex;
@@ -29,15 +29,15 @@ export const Container = styled.div`
 
 export const Content = styled.div`
     color: white;
-    font-size: 50px;
+    font-size: 80px;
 `
 
 export const Border = styled.div`
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 120px;
-    height: 120px;
+    width: 170px;
+    height: 170px;
     border-radius: 50%;
     z-index: 1;
     border-top:2px solid #8aff67;

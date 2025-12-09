@@ -1,5 +1,13 @@
-import { motion } from "motion/react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
+
+export const showInfoAnimation = keyframes`
+    from{
+        opacity: 0;
+    }
+    to{
+        opacity: 1;
+    }
+`
 
 export const Container = styled.div`
     height: 100vh;
@@ -12,12 +20,14 @@ export const CameraContainer = styled.div`
     flex: 1;
     height: 100%;
     position: relative;
+    z-index: 1;
 `
 
 export const Guide = styled.div`
     flex: 1;
     height: 100%;
     background-color: blue;
+    z-index: 1;
 `
 
 export const CountDownContainer = styled.div`
@@ -26,6 +36,7 @@ export const CountDownContainer = styled.div`
     left: 50%;
     transform: 50%;
     transform: translate(-50%,-50%);
+    z-index: 2;
 `
 
 export const BlackBoard = styled.div`
@@ -50,11 +61,13 @@ export const VideoGuide = styled.video`
     background-color: #2e2e2e;
 `
 
-export const InfoContainer = styled(motion.div)`
+export const InfoContainer = styled.div`
     width: 100%;
     height: 100%;
     text-align: center;
     color: white;
+    animation-delay: 1s;
+    animation: ${showInfoAnimation} 1s ease-in-out forwards;
     .l1{
         font-size: 55px;
         margin-top: 150px;
@@ -63,5 +76,20 @@ export const InfoContainer = styled(motion.div)`
     .l2{
         font-size: 55px;
         margin-top: 20px;
+    }
+    .l3{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 auto;
+        margin-top: 150px;
+        width: 250px;
+    }
+    .l3-value{
+        font-size: 70px;
+        font-weight: 300;
+    }
+    .l3-label{
+        font-size: 30px;
     }
 `

@@ -3,6 +3,7 @@ import { Border, Container, Content } from './styles'
 
 interface CountdownProps {
     time: number,
+    autoStart?: boolean,
     finish: () => void
 }
 
@@ -47,8 +48,13 @@ const Countdown = forwardRef<CountdownExpose, CountdownProps>((props, ref) => {
     }),)
 
     useEffect(() => {
+        if (props.autoStart) {
+            start()
+        }
         return () => {
-
+            if (timerRef.current) {
+                clearInterval(timerRef.current)
+            }
         }
     }, [])
 

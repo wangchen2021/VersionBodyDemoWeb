@@ -1,19 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer, VideoGuide, InfoContainer } from "./styles"
-import Countdown, { type CountdownExpose } from '@/components/Countdown'
 import { VersionStatus } from './app'
 import { AnimatePresence, motion } from "motion/react"
 import { plans, VersionStatusTypes, blackBoardSubTitle } from './config'
 import Mask from '@/components/Mask'
 import Scanner from '@/components/Scanner'
 import Camera from '@/components/Camera'
+import Countdown from '@/components/Countdown'
 
-const readyFinish = () => {
-    console.log("ready");
-}
+
 
 const Version: React.FC = () => {
-    const countdownRef = useRef<CountdownExpose>(null)
     const versionStatus = useRef(new VersionStatus())
     const [status, setStatus] = useState(versionStatus.current.status)
     const scannerPosition = useRef<{ left: number, width: number }>({ left: 0, width: 0 })
@@ -23,7 +20,15 @@ const Version: React.FC = () => {
         versionStatus.current.start()
     }
 
+    const countdownFinish = () => {
+        setTimeout(() => {
+            versionStatus.current.next()
+        }, 1000)
+    }
+
     const updateStatus = () => {
+        console.log(versionStatus.current.status);
+
         if (VersionStatusTypes.START === versionStatus.current.status) {
             setupScannerParams()
         }
@@ -62,20 +67,26 @@ const Version: React.FC = () => {
                         onFinish={finishScan}>
                     </Scanner>
                 }
-                <Mask>
-                    <InfoContainer initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                        <div className='l1'>COMING NEXT</div>
-                        <div className='l2'>{versionStatus.current.plan?.name}</div>
-                        <div>
-                            <div>
-                                {versionStatus.current.plan?.seconds}
+                {
+                    status === VersionStatusTypes.SHOW_INFO
+                    &&
+                    <Mask>
+                        <InfoContainer>
+                            <div className='l1'>COMING NEXT</div>
+                            <div className='l2'>{versionStatus.current.plan?.name}</div>
+                            <div className='l3'>
+                                <div>
+                                    <div className='l3-value'>{versionStatus.current.plan?.seconds}</div>
+                                    <div className='l3-label'>Sec.</div>
+                                </div>
+                                <div>
+                                    <div className='l3-value'>{versionStatus.current.plan?.reps}</div>
+                                    <div className='l3-label'>Reps</div>
+                                </div>
                             </div>
-                            <div>
-                                {versionStatus.current.plan?.reps}
-                            </div>
-                        </div>
-                    </InfoContainer>
-                </Mask>
+                        </InfoContainer>
+                    </Mask>
+                }
             </CameraContainer>
             <Guide>
                 {status <= VersionStatusTypes.START ?
@@ -101,8 +112,10 @@ const Version: React.FC = () => {
                 }
             </Guide>
             {
-                status === VersionStatusTypes.COUNTDOWN && <CountDownContainer>
-                    <Countdown ref={countdownRef} finish={readyFinish} time={3}></Countdown>
+                status === VersionStatusTypes.COUNTDOWN
+                &&
+                <CountDownContainer>
+                    <Countdown autoStart finish={countdownFinish} time={3}></Countdown>
                 </CountDownContainer>
             }
         </Container>
