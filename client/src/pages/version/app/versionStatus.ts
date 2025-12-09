@@ -15,6 +15,7 @@ export class VersionStatus {
     checkFps = 5
     nextCallback: Function[] = []
     pose: poseDetection.Pose[] = []
+    taskTimer: NodeJS.Timeout | null = null
 
     constructor() {
         this.status = VersionStatusTypes.WAIT_INIT
@@ -56,6 +57,13 @@ export class VersionStatus {
                 this.cvCheckWrong()
                 break
             case VersionStatusTypes.CV_CHECK_RIGHT:
+                this.keepRightPose()
+                break
+            case VersionStatusTypes.CV_CHECK_FINISH:
+                this.next()
+                break
+            case VersionStatusTypes.START:
+                //wait render
                 break
         }
     }
@@ -68,6 +76,13 @@ export class VersionStatus {
         if (!points.some(point => !point.score || point.score < VersionStatus.scoreCvLine)) {
             this.next()
         }
+    }
+
+    keepRightPose() {
+        if (this.taskTimer) return
+        this.taskTimer = setTimeout(() => {
+            this.next()
+        }, 2000)
     }
 
     updateFrameColor() {

@@ -10,6 +10,9 @@ export class Render {
     radio = 0
     scoreLine = 0.3
     frameColor = StatusFrameColors[VersionStatusTypes.CV_CHECK_WRONG]
+    lineWidth = 5
+    drawPoints: Keypoint[] = []
+    animalId = 0
     sectionPoints = [
         [12, 14],
         [14, 16],
@@ -48,13 +51,18 @@ export class Render {
 
     renderFrame(points: Keypoint[]) {
         const len = points.length
+        const drawPoints: Keypoint[] = []
         for (let i = 0; i < len; i++) {
             const point = points[i]
-            if (!point.score || point.score < this.scoreLine || i < 5) continue
             const { x, y } = point
             const { x: dx, y: dy } = this.getDrawXY(x, y)
+            drawPoints.push({ ...point, x: dx, y: dy })
+            if (!point.score || point.score < this.scoreLine || i < 5) continue
             this.renderDot(dx, dy)
         }
+
+        this.drawPoints = drawPoints
+
         //绘制骨架
         for (let section of this.sectionPoints) {
             this.renderSection(points[section[0]], points[section[1]])
@@ -81,7 +89,7 @@ export class Render {
         ctx.lineTo(C.x, C.y)
         ctx.lineTo(B.x, B.y)
         ctx.lineTo(D.x, D.y)
-        ctx.lineWidth = 4
+        ctx.lineWidth = this.lineWidth
         ctx.strokeStyle = this.frameColor
         ctx.closePath()
         ctx.stroke()

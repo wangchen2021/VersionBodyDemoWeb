@@ -10,6 +10,7 @@ export const Container = styled.div`
 export const CameraContainer = styled.div`
     flex: 1;
     height: 100%;
+    position: relative;
 `
 
 export const Guide = styled.div`
