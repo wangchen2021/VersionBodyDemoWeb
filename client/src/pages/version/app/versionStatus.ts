@@ -1,7 +1,6 @@
 import type { Render } from "@/pages/Version/app/render"
 import { GlobalDetector } from "@/pages/Version/app/detector"
-import { StatusFrameColors } from "../config/colors"
-import { VersionStatusTypes } from "../config/status"
+import { StatusFrameColors, VersionStatusTypes } from "../config"
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import type { EstimatePlan } from "../config/plan";
 
@@ -74,6 +73,17 @@ export class VersionStatus {
             case VersionStatusTypes.SHOW_INFO:
                 this.waitInfoShow()
                 break
+            case VersionStatusTypes.COUNTDOWN:
+                //wait countdown
+                break
+            case VersionStatusTypes.DETECT:
+                //detecting
+                break
+            case VersionStatusTypes.FINISH:
+                //finished
+                break
+            default:
+                break
         }
     }
 
@@ -91,6 +101,7 @@ export class VersionStatus {
         if (this.taskTimer) return
         this.taskTimer = setTimeout(() => {
             this.next()
+            clearTimeout(this.taskTimer!)
             this.taskTimer = null
         }, 5000);
     }
@@ -99,6 +110,7 @@ export class VersionStatus {
         if (this.taskTimer) return
         this.taskTimer = setTimeout(() => {
             this.next()
+            clearTimeout(this.taskTimer!)
             this.taskTimer = null
         }, 2000)
     }

@@ -27,8 +27,6 @@ const Version: React.FC = () => {
     }
 
     const updateStatus = () => {
-        console.log(versionStatus.current.status);
-
         if (VersionStatusTypes.START === versionStatus.current.status) {
             setupScannerParams()
         }
