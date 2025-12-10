@@ -116,3 +116,26 @@ export const getFourPointsOnTwoPoints = (pointA: Keypoint, pointB: Keypoint): Ke
 
     return [point1, point2, point3, point4];
 };
+
+
+
+export function calculateVectorAngle(a: Keypoint, b: Keypoint, isDegree = true): number {
+
+    const dotProduct = a.x * b.x + a.y * b.y;
+    const magnitudeA = Math.sqrt(a.x ** 2 + a.y ** 2);
+    const magnitudeB = Math.sqrt(b.x ** 2 + b.y ** 2);
+
+    if (magnitudeA === 0 || magnitudeB === 0) {
+        return NaN;
+    }
+
+    const cosTheta = Math.max(-1, Math.min(1, dotProduct / (magnitudeA * magnitudeB)));
+
+    const angleRadian = Math.acos(cosTheta);
+
+    return isDegree ? angleRadian * (180 / Math.PI) : angleRadian;
+}
+
+export const getVector = (p1: Keypoint, p2: Keypoint) => {
+    return { ...p2, x: p2.x - p1.x, y: p2.y - p1.y }
+}

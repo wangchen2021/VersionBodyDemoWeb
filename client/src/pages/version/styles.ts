@@ -14,6 +14,48 @@ export const Container = styled.div`
     display: flex;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     overflow: hidden;
+    flex-direction: column;
+    transition: all 0.3s ease-in-out;
+`
+
+export const MainContent = styled.div`
+    flex: 13;
+    display: flex;
+    position: relative;
+    transition: all 0.3s ease-in-out;
+    min-height: 0;
+`
+
+export const BottomBar = styled.div<{ $show: boolean }>`
+    flex: ${({ $show }) => ($show ? 1 : 0)}; ;
+    background: linear-gradient(#000000cc, #000000);
+    transition: all 0.3s ease-in-out;
+    color: white;
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    min-height: 0;
+
+    .title{
+        font-size: 40px;
+        margin-left: 20px;
+    }
+
+    .finish{
+        font-size: 60px;
+        margin-left: 20px;
+    }
+
+    .total{
+        font-size: 50px;
+    }
+
+    .progress-container{
+        height: 100%;
+        width: 200px;
+        margin-left: 40px;
+    }
 `
 
 export const CameraContainer = styled.div`

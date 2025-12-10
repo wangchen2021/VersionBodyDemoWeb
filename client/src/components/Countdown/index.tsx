@@ -17,10 +17,10 @@ const Countdown = forwardRef<CountdownExpose, CountdownProps>((props, ref) => {
 
     const timerRef = useRef<NodeJS.Timeout>(null)
     const [count, setCount] = useState(props.time)
-    const [finishFlag, setFinishFlag] = useState(false)
+    const finishFlag = useRef(false)
 
     const start = useCallback(() => {
-        setFinishFlag(false);
+        finishFlag.current = false;
         setCount(props.time);
         if (timerRef.current) clearInterval(timerRef.current);
         timerRef.current = setInterval(() => {
@@ -30,8 +30,7 @@ const Countdown = forwardRef<CountdownExpose, CountdownProps>((props, ref) => {
                         clearInterval(timerRef.current);
                         timerRef.current = null;
                     }
-                    setFinishFlag(true);
-                    finish();
+                    emitFinish();
                     return 0; // 最终置0，避免负数
                 }
                 return prevCount - 1;
@@ -39,7 +38,9 @@ const Countdown = forwardRef<CountdownExpose, CountdownProps>((props, ref) => {
         }, 1000);
     }, [props.time, props.finish]);
 
-    const finish = () => {
+    const emitFinish = () => {
+        if (finishFlag.current) return
+        finishFlag.current = true;
         props.finish()
     }
 
@@ -61,7 +62,7 @@ const Countdown = forwardRef<CountdownExpose, CountdownProps>((props, ref) => {
     return (
         <Container>
             <Border></Border>
-            <Content>{finishFlag ? finishText : count}</Content>
+            <Content>{count > 0 ? count : finishText}</Content>
         </Container>
     )
 })

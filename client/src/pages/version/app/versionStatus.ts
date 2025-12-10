@@ -17,6 +17,9 @@ export class VersionStatus {
     pose: poseDetection.Pose[] = []
     taskTimer: NodeJS.Timeout | null = null
     plan: EstimatePlan | null = null
+    startRecordAction = false
+    actionScore = 100
+    recordFinishCallback: Array<(score: number) => any> = []
 
     constructor() {
         this.status = VersionStatusTypes.WAIT_INIT
@@ -77,6 +80,7 @@ export class VersionStatus {
                 //wait countdown
                 break
             case VersionStatusTypes.DETECT:
+                this.detectPlan()
                 //detecting
                 break
             case VersionStatusTypes.FINISH:
@@ -85,6 +89,48 @@ export class VersionStatus {
             default:
                 break
         }
+    }
+
+    detectPlan() {
+        if (this.startRecordAction) return this.recordAction()
+        const { plan, pose } = this
+        if (!plan || !pose || !pose[0]) return;
+        const { trigger } = plan
+        if (trigger(pose[0].keypoints)) {
+            this.startRecordAction = true
+            this.recordAction()
+        }
+    }
+
+    recordAction() {
+        const { plan, pose } = this
+        if (!plan || !pose || !pose[0]) return
+        const { actionEnd } = plan
+        if (actionEnd(pose[0].keypoints)) {
+            this.recordFinish()
+        }
+    }
+
+    recordFinish() {
+        
+        console.log("finish one rep");
+        const { plan, recordFinishCallback, actionScore, pose } = this
+        if (!plan || !pose || !pose[0]) return
+        const finishCheckOps = plan.checkOps.finish
+
+        //check
+        finishCheckOps.forEach(fn => {
+            fn(pose[0].keypoints)
+        })
+
+        //finish callback
+        recordFinishCallback.forEach(fn => {
+            fn(actionScore)
+        });
+
+        //reset
+        this.startRecordAction = false
+        this.actionScore = 100
     }
 
     cvCheckWrong() {
@@ -131,7 +177,17 @@ export class VersionStatus {
     }
 
     bindNextCallback(fn: Function) {
-        this.nextCallback.push(fn)
+        const { nextCallback } = this
+        if (!nextCallback.includes(fn)) {
+            nextCallback.push(fn)
+        }
+    }
+
+    bindRecordFinishCallback(fn: (score: number) => any) {
+        const { recordFinishCallback } = this
+        if (!recordFinishCallback.includes(fn)) {
+            recordFinishCallback.push(fn)
+        }
     }
 
     triggerNextCallbacks() {
