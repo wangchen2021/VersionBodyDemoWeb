@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { Container } from './styles'
 import { CDN } from '@/constant'
 
@@ -7,34 +7,18 @@ const closeIcon = CDN + "/closeAudio.png"
 
 export interface AudioSwitchExpose {
     play: (src: string) => void
+    audioEnd: () => void
 }
 
 const AudioSwitch = forwardRef<AudioSwitchExpose>((_props, ref) => {
 
     const [open, setOpen] = useState(false)
-    const hasPermission = useRef(false)
     const audioRef = useRef<HTMLAudioElement>(null)
     const audioSrc = useRef<string>(null)
     const isPlay = useRef(false)
 
-    const checkPermission = useCallback(() => {
-        if (hasPermission.current) return
-        const audio = audioRef.current
-        if (audio) {
-            console.log("open audio");
-            audioPlay()
-            hasPermission.current = true
-        }
-    }, [audioRef])
-
     const changeOpen = () => {
-        checkPermission()
         setOpen(prev => {
-            if (!prev) {
-                audioPlay(true)
-            } else {
-                audioEnd()
-            }
             return !prev
         })
     }
@@ -44,34 +28,45 @@ const AudioSwitch = forwardRef<AudioSwitchExpose>((_props, ref) => {
         audioPlay()
     }
 
-    const audioPlay = (skip?: boolean) => {
+    const audioPlay = useCallback(async (skip?: boolean) => {
         if (!open && !skip) return
         const audio = audioRef.current
         const src = audioSrc.current
         if (!audio || !src) return
-        audioEnd() // 中断上次播放
+        audioEnd()
         audio.src = src
         audio.currentTime = 0
         audio.play()
-        isPlay.current = true
+            .then(() => {
+                isPlay.current = true
+            })
+            .catch((err) => {
+                console.log(err);
+            })
         audio.onended = () => {
             isPlay.current = false
         }
         audio.onerror = (err) => {
             console.error("audio err:" + err);
         }
-    }
+    }, [open])
 
     const audioEnd = () => {
         const audio = audioRef.current
-        if (!audio) return
+        if (!audio || !isPlay) return
         audio.pause()
-        isPlay.current = false
     }
 
     useImperativeHandle(ref, () => ({
-        play
+        play,
+        audioEnd,
     }))
+
+    useEffect(() => {
+        if (open) {
+            audioPlay()
+        }
+    }, [open])
 
     return (
         <Container onClick={changeOpen} whileHover={{ scale: 1.1 }}>

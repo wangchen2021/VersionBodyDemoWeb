@@ -1,3 +1,4 @@
+import { CDN } from "@/constant"
 import { calculateAngleOfLegs } from "@/shared/body/bodyAngle"
 import { calculateVectorAngle, getVector } from "@/shared/utils/Math"
 import type { Keypoint } from "@tensorflow-models/pose-detection"
@@ -19,6 +20,8 @@ export interface EstimatePlan {
     checkOps: CheckOps
 }
 
+
+export const finishAudio = CDN + "/audio/dd.MP3"
 
 const SquatTrigger = (points: Keypoint[]) => {
     if (!points || points.length === 0) return false

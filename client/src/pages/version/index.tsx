@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer, VideoGuide, InfoContainer, MainContent, BottomBar, AudioContainer } from "./styles"
 import { VersionStatus } from './app'
 import { AnimatePresence, motion } from "motion/react"
-import { plans, VersionStatusTypes, blackBoardSubTitle } from './config'
+import { plans, VersionStatusTypes, blackBoardSubTitle, finishAudio } from './config'
 import Mask from '@/components/Mask'
 import Scanner from '@/components/Scanner'
 import Camera from '@/components/Camera'
@@ -35,6 +35,7 @@ const Version: React.FC = () => {
     const start = () => {
         const vs = versionStatus.current
         vs.bindPlan(plans.Squat)
+        vs.bindAudio(audioRef.current)
         vs.bindNextCallback(updateStatus.bind(this))
         vs.bindRecordFinishCallback(recordFinish.bind(this))
         versionStatus.current.start()
@@ -96,6 +97,10 @@ const Version: React.FC = () => {
 
     //监听完成次数
     useEffect(() => {
+        const audio = audioRef.current
+        if (audio) {
+            audio.play(finishAudio)
+        }
         if (finishTimes === finishData.length) {
             const vs = versionStatus.current
             vs.next()

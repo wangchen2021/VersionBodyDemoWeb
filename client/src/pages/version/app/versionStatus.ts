@@ -3,6 +3,7 @@ import { GlobalDetector } from "@/pages/Version/app/detector"
 import { StatusFrameColors, VersionStatusTypes } from "../config"
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import type { EstimatePlan } from "../config/plan";
+import type { AudioSwitchExpose } from "@/components/AudioSwitch";
 
 //状态机
 export class VersionStatus {
@@ -20,6 +21,7 @@ export class VersionStatus {
     startRecordAction = false
     actionScore = 100
     recordFinishCallback: Array<(score: number) => any> = []
+    audio: AudioSwitchExpose | null = null
 
     constructor() {
         this.status = VersionStatusTypes.WAIT_INIT
@@ -38,6 +40,10 @@ export class VersionStatus {
 
     bindPlan(plan: EstimatePlan) {
         this.plan = plan
+    }
+
+    bindAudio(audio: AudioSwitchExpose | null) {
+        this.audio = audio
     }
 
     bindRender(render: Render) {
@@ -113,9 +119,8 @@ export class VersionStatus {
     }
 
     recordFinish() {
-
         console.log("finish one rep");
-        const { plan, recordFinishCallback, actionScore, pose } = this
+        const { plan, recordFinishCallback, actionScore, pose, audio } = this
         if (!plan || !pose || !pose[0]) return
         const finishCheckOps = plan.checkOps.finish
 
