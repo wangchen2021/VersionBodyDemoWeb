@@ -18,6 +18,15 @@ export const Container = styled.div`
     transition: all 0.3s ease-in-out;
 `
 
+export const AudioContainer = styled.div`
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    width: 50px;
+    height: 50px;
+    z-index: 9;
+`
+
 export const MainContent = styled.div`
     flex: 13;
     display: flex;

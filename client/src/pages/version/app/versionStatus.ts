@@ -85,6 +85,7 @@ export class VersionStatus {
                 break
             case VersionStatusTypes.FINISH:
                 //finished
+                this.finish()
                 break
             default:
                 break
@@ -112,7 +113,7 @@ export class VersionStatus {
     }
 
     recordFinish() {
-        
+
         console.log("finish one rep");
         const { plan, recordFinishCallback, actionScore, pose } = this
         if (!plan || !pose || !pose[0]) return
@@ -158,7 +159,7 @@ export class VersionStatus {
             this.next()
             clearTimeout(this.taskTimer!)
             this.taskTimer = null
-        }, 2000)
+        }, 3000)
     }
 
     updateFrameColor() {
@@ -192,5 +193,14 @@ export class VersionStatus {
 
     triggerNextCallbacks() {
         this.nextCallback.forEach(fn => fn())
+    }
+
+    finish() {
+        console.log("finish");
+        setTimeout(() => {
+            const { detector } = this
+            detector.pause()
+            detector.source?.pause()
+        }, 1500);
     }
 }

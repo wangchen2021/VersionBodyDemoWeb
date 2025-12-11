@@ -117,6 +117,12 @@ class Detector {
         }
     }
 
+    pause() {
+        if (this.detectorTimer) {
+            clearInterval(this.detectorTimer)
+        }
+    }
+
     destroy() {
         if (this.detectorTimer) {
             clearInterval(this.detectorTimer)

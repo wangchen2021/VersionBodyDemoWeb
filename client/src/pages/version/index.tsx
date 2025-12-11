@@ -1,5 +1,5 @@
-import React, { useCallback, useRef, useState } from 'react'
-import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer, VideoGuide, InfoContainer, MainContent, BottomBar } from "./styles"
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer, VideoGuide, InfoContainer, MainContent, BottomBar, AudioContainer } from "./styles"
 import { VersionStatus } from './app'
 import { AnimatePresence, motion } from "motion/react"
 import { plans, VersionStatusTypes, blackBoardSubTitle } from './config'
@@ -8,11 +8,13 @@ import Scanner from '@/components/Scanner'
 import Camera from '@/components/Camera'
 import Countdown from '@/components/Countdown'
 import Progress, { type ProgressPropsData } from '@/components/Progress'
+import AudioSwitch, { type AudioSwitchExpose } from '@/components/AudioSwitch'
 
 
 
 const Version: React.FC = () => {
     const versionStatus = useRef<VersionStatus>(new VersionStatus())
+    const audioRef = useRef<AudioSwitchExpose>(null)
     const [status, setStatus] = useState(versionStatus.current.status)
     const scannerPosition = useRef<{ left: number, width: number }>({ left: 0, width: 0 })
     const videoGuideRef = useRef<HTMLVideoElement>(null)
@@ -42,8 +44,21 @@ const Version: React.FC = () => {
         if (VersionStatusTypes.START === versionStatus.current.status) {
             setupScannerParams()
         }
+        playSubTitle()
         setStatus(versionStatus.current.status)
     }, [])
+
+
+    const playSubTitle = () => {
+        const vs = versionStatus.current
+        const newSubTitle = blackBoardSubTitle[vs.status]
+        const oldSubTitle = blackBoardSubTitle[status]
+        const audio = audioRef.current
+        if (!newSubTitle || !audio) return
+        if (!oldSubTitle || (oldSubTitle.text !== newSubTitle.text)) {
+            audio.play(newSubTitle.audio)
+        }
+    }
 
     const setupScannerParams = () => {
         const points = versionStatus.current.render?.drawPoints
@@ -79,9 +94,19 @@ const Version: React.FC = () => {
         });
     }, []);
 
+    //监听完成次数
+    useEffect(() => {
+        if (finishTimes === finishData.length) {
+            const vs = versionStatus.current
+            vs.next()
+        }
+    }, [finishTimes])
 
     return (
         <Container>
+            <AudioContainer>
+                <AudioSwitch ref={audioRef}></AudioSwitch>
+            </AudioContainer>
             <MainContent>
                 <CameraContainer>
                     <Camera videoWidth={500} videoHeight={500} onload={start} versionStatus={versionStatus.current}></Camera>
@@ -129,7 +154,7 @@ const Version: React.FC = () => {
                                         damping: 20
                                     }}
                                 >
-                                    {blackBoardSubTitle[status]}
+                                    {blackBoardSubTitle[status].text}
                                 </motion.span>
                             </AnimatePresence>
                         </BlackBoard>
