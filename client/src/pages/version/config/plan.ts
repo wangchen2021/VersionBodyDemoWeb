@@ -21,8 +21,6 @@ export interface EstimatePlan {
 }
 
 
-export const finishAudio = CDN + "/audio/dd.MP3"
-
 const SquatTrigger = (points: Keypoint[]) => {
     if (!points || points.length === 0) return false
     const angle = calculateAngleOfLegs(points)

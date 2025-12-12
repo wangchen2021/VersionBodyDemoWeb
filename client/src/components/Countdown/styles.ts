@@ -25,6 +25,7 @@ export const Container = styled.div`
     justify-content: center;
     transform-origin:center;
     animation: ${CountDownAnimation} linear infinite 1.5s;
+    overflow: hidden;
 `
 
 export const Content = styled.div`

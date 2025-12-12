@@ -1,10 +1,12 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { Border, Container, Content } from './styles'
+import AudioSwitch, { type AudioSwitchExpose } from '../AudioSwitch'
+import { CDN } from '@/constant'
 
 interface CountdownProps {
     time: number,
     autoStart?: boolean,
-    finish: () => void
+    finish: () => void,
 }
 
 export interface CountdownExpose {
@@ -17,6 +19,7 @@ const Countdown = forwardRef<CountdownExpose, CountdownProps>((props, ref) => {
 
     const timerRef = useRef<NodeJS.Timeout>(null)
     const [count, setCount] = useState(props.time)
+    const audioRef = useRef<AudioSwitchExpose>(null)
     const finishFlag = useRef(false)
 
     const start = useCallback(() => {
@@ -31,12 +34,22 @@ const Countdown = forwardRef<CountdownExpose, CountdownProps>((props, ref) => {
                         timerRef.current = null;
                     }
                     emitFinish();
-                    return 0; // 最终置0，避免负数
+                    return 0; 
                 }
                 return prevCount - 1;
             });
-        }, 1000);
+        }, 1500);
     }, [props.time, props.finish]);
+
+
+    const playAudio = (src: string) => {
+        const audio = audioRef.current
+        if (audio) {
+            audio.play(src, true)
+        } else {
+            console.error("audio play failed");
+        }
+    }
 
     const emitFinish = () => {
         if (finishFlag.current) return
@@ -59,10 +72,19 @@ const Countdown = forwardRef<CountdownExpose, CountdownProps>((props, ref) => {
         }
     }, [])
 
+    useEffect(() => {
+        if (count > 0) {
+            playAudio(CDN + "/audio/ding.MP3")
+        } else {
+            playAudio(CDN + "/audio/dd.MP3")
+        }
+    }, [count])
+
     return (
         <Container>
             <Border></Border>
             <Content>{count > 0 ? count : finishText}</Content>
+            <AudioSwitch show={false} ref={audioRef}></AudioSwitch>
         </Container>
     )
 })

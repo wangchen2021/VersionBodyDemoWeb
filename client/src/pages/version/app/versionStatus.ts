@@ -209,10 +209,8 @@ export class VersionStatus {
         return new Promise((resolve, _reject) => {
             console.log("finish");
             setTimeout(() => {
-                const { detector, startDetectTime } = this
+                const { startDetectTime } = this
                 this.timeCount = Math.floor((Date.now() - startDetectTime) / 1000)
-                detector.pause()
-                detector.source?.pause()
                 resolve(this.timeCount)
             }, 1500);
         })

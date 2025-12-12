@@ -144,3 +144,14 @@ export const InfoContainer = styled.div`
         font-size: 30px;
     }
 `
+
+
+export const CenterProgressContainer = styled.div`
+    position: absolute;
+    width: 20px;
+    height: 400px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    z-index: 1;
+`

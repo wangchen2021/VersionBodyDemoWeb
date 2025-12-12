@@ -77,7 +77,7 @@ const FinishInfo: React.FC<FinishInfoProps> = ({ name, reps, sec, score, ef }) =
             </div>
             <div className='l4'>
                 <div>
-                    <div className='l4-value'>{ef}</div>
+                    <div className='l4-value'>{ef}%</div>
                     <div className='l4-label'>Effectiveness</div>
                 </div>
             </div>

@@ -6,11 +6,15 @@ const openIcon = CDN + "/openAudio.png"
 const closeIcon = CDN + "/closeAudio.png"
 
 export interface AudioSwitchExpose {
-    play: (src: string) => void
+    play: (src: string, skip?: boolean) => void
     audioEnd: () => void
 }
 
-const AudioSwitch = forwardRef<AudioSwitchExpose>((_props, ref) => {
+interface AudioSwitchProps {
+    show?: boolean
+}
+
+const AudioSwitch = forwardRef<AudioSwitchExpose, AudioSwitchProps>(({ show = true }, ref) => {
 
     const [open, setOpen] = useState(false)
     const audioRef = useRef<HTMLAudioElement>(null)
@@ -23,9 +27,9 @@ const AudioSwitch = forwardRef<AudioSwitchExpose>((_props, ref) => {
         })
     }
 
-    const play = (src: string) => {
+    const play = (src: string, skip?: boolean) => {
         audioSrc.current = src
-        audioPlay()
+        audioPlay(skip)
     }
 
     const audioPlay = useCallback(async (skip?: boolean) => {
@@ -33,7 +37,7 @@ const AudioSwitch = forwardRef<AudioSwitchExpose>((_props, ref) => {
         const audio = audioRef.current
         const src = audioSrc.current
         if (!audio || !src) return
-        audioEnd()
+        audio.currentTime = 0
         audio.src = src
         audio.currentTime = 0
         audio.play()
@@ -69,7 +73,7 @@ const AudioSwitch = forwardRef<AudioSwitchExpose>((_props, ref) => {
     }, [open])
 
     return (
-        <Container onClick={changeOpen} whileHover={{ scale: 1.1 }}>
+        <Container $show={show} onClick={changeOpen} whileHover={{ scale: 1.1 }}>
             <img className='icon' src={open ? openIcon : closeIcon}></img>
             <audio ref={audioRef}></audio>
         </Container>

@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer, VideoGuide, InfoContainer, MainContent, BottomBar, AudioContainer } from "./styles"
+import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer, VideoGuide, InfoContainer, MainContent, BottomBar, AudioContainer, CenterProgressContainer } from "./styles"
 import { VersionStatus } from './app'
 import { AnimatePresence, motion } from "motion/react"
-import { plans, VersionStatusTypes, blackBoardSubTitle, finishAudio, createFinishData } from './config'
+import { plans, VersionStatusTypes, blackBoardSubTitle, createFinishData } from './config'
 import Mask from '@/components/Mask'
 import Scanner from '@/components/Scanner'
 import Camera from '@/components/Camera'
@@ -10,11 +10,15 @@ import Countdown from '@/components/Countdown'
 import Progress, { type ProgressPropsData } from '@/components/Progress'
 import AudioSwitch, { type AudioSwitchExpose } from '@/components/AudioSwitch'
 import FinishInfo from './components/FinishInfo'
-import { CDN } from '@/constant'
+import { audioSrc } from './config/audio'
+import { usePreloadVideo } from '@/hooks/usePreloadVideo'
+import { usePreloadAudio } from '@/hooks/usePreloadAudio'
 
 
 
 const Version: React.FC = () => {
+    const { preloadAudio } = usePreloadAudio()
+    const { preloadVideo } = usePreloadVideo()
     const versionStatus = useRef<VersionStatus>(new VersionStatus())
     const audioRef = useRef<AudioSwitchExpose>(null)
     const [status, setStatus] = useState(versionStatus.current.status)
@@ -22,6 +26,9 @@ const Version: React.FC = () => {
     const videoGuideRef = useRef<HTMLVideoElement>(null)
     const [finishTimes, setFinishTimes] = useState(0)
     const [finishData, setFinishData] = useState<ProgressPropsData[]>(createFinishData(plans.Squat))
+    const [currentFinishData, setCurrentFinishData] = useState<ProgressPropsData[]>([])
+    const score = useRef(0)
+    const ef = useRef(0)
 
     const start = () => {
         const vs = versionStatus.current
@@ -29,7 +36,7 @@ const Version: React.FC = () => {
         vs.bindAudio(audioRef.current)
         vs.bindNextCallback(updateStatus.bind(this))
         vs.bindRecordFinishCallback(recordFinish.bind(this))
-        versionStatus.current.start()
+        vs.start()
     }
 
     const updateStatus = useCallback(async () => {
@@ -93,6 +100,7 @@ const Version: React.FC = () => {
     }
 
     const recordFinish = useCallback((score: number) => {
+        score = Math.random() * 100
         setFinishTimes((prevFinishTimes) => {
             const newIndex = prevFinishTimes;
             setFinishData((prevFinishData) => {
@@ -107,20 +115,65 @@ const Version: React.FC = () => {
     const playFinishAudio = () => {
         const audio = audioRef.current
         if (!audio) return
-        audio.play(CDN + "/audio/vf.MP3")
+        audio.play(audioSrc.detectFinish)
+    }
+
+    const calculateDataResults = () => {
+        const plan = versionStatus.current.plan
+        if (!plan) return
+        let tempScore = 0
+        let tempEf = 0
+        for (let item of finishData) {
+            tempScore += item.value
+            if (tempScore > 60) tempEf++
+        }
+        tempScore = Math.floor(tempScore / 10)
+        tempEf = Math.floor(tempEf * 100 / 10)
+        tempEf = tempEf - 10 + Math.random() * 20
+        score.current = tempScore
+        ef.current = Math.min(Math.floor(tempEf), 100)
+        console.log({
+            finishData,
+            score,
+            ef
+        });
+    }
+
+    const preloadMedia = () => {
+        console.log("preload media");
+        const vs = versionStatus.current
+        const plan = vs.plan
+        const audios = []
+        if (plan) preloadVideo(plan.videoSrc)
+        for (let key in blackBoardSubTitle) {
+            audios.push(blackBoardSubTitle[key].audio)
+        }
+        for (let key in audioSrc) {
+            audios.push(audioSrc[key])
+        }
+        preloadAudio(audios)
     }
 
     //监听完成次数
     useEffect(() => {
         const audio = audioRef.current
         if (audio) {
-            audio.play(finishAudio)
+            audio.play(audioSrc.getRes)
         }
         if (finishTimes === finishData.length) {
             const vs = versionStatus.current
+            calculateDataResults()
             vs.next()
         }
+        if (finishTimes > 0) {
+            const newData = [finishData[finishTimes - 1]]
+            setCurrentFinishData(newData)
+        }
     }, [finishTimes])
+
+    useEffect(() => {
+        preloadMedia()
+    }, [])
 
     return (
         <Container>
@@ -189,6 +242,13 @@ const Version: React.FC = () => {
                         <Countdown autoStart finish={countdownFinish} time={3}></Countdown>
                     </CountDownContainer>
                 }
+                {
+                    status === VersionStatusTypes.DETECT && currentFinishData
+                    &&
+                    <CenterProgressContainer>
+                        <Progress showLabel={true} data={currentFinishData}></Progress>
+                    </CenterProgressContainer>
+                }
             </MainContent>
             <BottomBar $show={Boolean(status >= VersionStatusTypes.DETECT && status < VersionStatusTypes.FINISH)}>
                 <span className='title'>Reps</span>
@@ -205,13 +265,12 @@ const Version: React.FC = () => {
                         reps={versionStatus.current.plan.reps}
                         name={versionStatus.current.plan.name}
                         sec={versionStatus.current.timeCount}
-                        score={62}
-                        ef={62}
+                        score={score.current}
+                        ef={ef.current}
                     >
                     </FinishInfo>
                 </Mask>
             }
-
         </Container>
     )
 }
