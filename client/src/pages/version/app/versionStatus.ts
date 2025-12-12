@@ -88,7 +88,6 @@ export class VersionStatus {
                 //wait countdown
                 break
             case VersionStatusTypes.DETECT:
-                this.startDetectTime = Date.now()
                 this.detectPlan()
                 //detecting
                 break
@@ -98,6 +97,10 @@ export class VersionStatus {
             default:
                 break
         }
+    }
+
+    setStartDetectTime(time: number) {
+        this.startDetectTime = time
     }
 
     detectPlan() {

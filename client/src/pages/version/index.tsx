@@ -44,7 +44,9 @@ const Version: React.FC = () => {
             setupScannerParams()
         }
         if (VersionStatusTypes.DETECT === vs.status) {
+            const vs = versionStatus.current
             const video = videoGuideRef.current
+            vs.setStartDetectTime(Date.now())
             if (!video) return
             video.play()
         }
