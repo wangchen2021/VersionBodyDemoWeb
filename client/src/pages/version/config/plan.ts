@@ -76,12 +76,23 @@ const checkVerticalSpine = (points: Keypoint[]) => {
     }
 }
 
+export const createFinishData = (plan: EstimatePlan) => {
+    const res = []
+    for (let i = 0; i < plan.reps; i++) {
+        res.push({
+            value: 0,
+            total: 100
+        })
+    }
+    return res
+}
+
 
 export const plans: Record<string, EstimatePlan> = {
     Squat: {
         name: "Half Sumo Squat",
         cn: "深蹲",
-        videoSrc: "http://1312576865.vod-qcloud.com/1600c0eevodcq1312576865/7ec307171397757900678175097/f0.mp4",
+        videoSrc: CDN + "/video/v1.mp4",
         seconds: 60,
         reps: 10,
         trigger: SquatTrigger,

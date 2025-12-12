@@ -22,6 +22,8 @@ export class VersionStatus {
     actionScore = 100
     recordFinishCallback: Array<(score: number) => any> = []
     audio: AudioSwitchExpose | null = null
+    timeCount = 0
+    startDetectTime!: number
 
     constructor() {
         this.status = VersionStatusTypes.WAIT_INIT
@@ -86,12 +88,12 @@ export class VersionStatus {
                 //wait countdown
                 break
             case VersionStatusTypes.DETECT:
+                this.startDetectTime = Date.now()
                 this.detectPlan()
                 //detecting
                 break
             case VersionStatusTypes.FINISH:
                 //finished
-                this.finish()
                 break
             default:
                 break
@@ -120,7 +122,7 @@ export class VersionStatus {
 
     recordFinish() {
         console.log("finish one rep");
-        const { plan, recordFinishCallback, actionScore, pose, audio } = this
+        const { plan, recordFinishCallback, actionScore, pose } = this
         if (!plan || !pose || !pose[0]) return
         const finishCheckOps = plan.checkOps.finish
 
@@ -201,11 +203,15 @@ export class VersionStatus {
     }
 
     finish() {
-        console.log("finish");
-        setTimeout(() => {
-            const { detector } = this
-            detector.pause()
-            detector.source?.pause()
-        }, 1500);
+        return new Promise((resolve, _reject) => {
+            console.log("finish");
+            setTimeout(() => {
+                const { detector, startDetectTime } = this
+                this.timeCount = Math.floor((Date.now() - startDetectTime) / 1000)
+                detector.pause()
+                detector.source?.pause()
+                resolve(this.timeCount)
+            }, 1500);
+        })
     }
 }

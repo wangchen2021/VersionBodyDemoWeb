@@ -2,13 +2,15 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer, VideoGuide, InfoContainer, MainContent, BottomBar, AudioContainer } from "./styles"
 import { VersionStatus } from './app'
 import { AnimatePresence, motion } from "motion/react"
-import { plans, VersionStatusTypes, blackBoardSubTitle, finishAudio } from './config'
+import { plans, VersionStatusTypes, blackBoardSubTitle, finishAudio, createFinishData } from './config'
 import Mask from '@/components/Mask'
 import Scanner from '@/components/Scanner'
 import Camera from '@/components/Camera'
 import Countdown from '@/components/Countdown'
 import Progress, { type ProgressPropsData } from '@/components/Progress'
 import AudioSwitch, { type AudioSwitchExpose } from '@/components/AudioSwitch'
+import FinishInfo from './components/FinishInfo'
+import { CDN } from '@/constant'
 
 
 
@@ -19,18 +21,7 @@ const Version: React.FC = () => {
     const scannerPosition = useRef<{ left: number, width: number }>({ left: 0, width: 0 })
     const videoGuideRef = useRef<HTMLVideoElement>(null)
     const [finishTimes, setFinishTimes] = useState(0)
-    const [finishData, setFinishData] = useState<ProgressPropsData[]>([
-        { value: 0, total: 100 },
-        { value: 0, total: 100 },
-        { value: 0, total: 100 },
-        { value: 0, total: 100 },
-        { value: 0, total: 100 },
-        { value: 0, total: 100 },
-        { value: 0, total: 100 },
-        { value: 0, total: 100 },
-        { value: 0, total: 100 },
-        { value: 0, total: 100 },
-    ])
+    const [finishData, setFinishData] = useState<ProgressPropsData[]>(createFinishData(plans.Squat))
 
     const start = () => {
         const vs = versionStatus.current
@@ -41,14 +32,30 @@ const Version: React.FC = () => {
         versionStatus.current.start()
     }
 
-    const updateStatus = useCallback(() => {
-        if (VersionStatusTypes.START === versionStatus.current.status) {
-            setupScannerParams()
-        }
+    const updateStatus = useCallback(async () => {
+        await processStatus()
         playSubTitle()
         setStatus(versionStatus.current.status)
     }, [])
 
+    const processStatus = async () => {
+        const vs = versionStatus.current
+        if (VersionStatusTypes.START === vs.status) {
+            setupScannerParams()
+        }
+        if (VersionStatusTypes.DETECT === vs.status) {
+            const video = videoGuideRef.current
+            if (!video) return
+            video.play()
+        }
+        if (VersionStatusTypes.FINISH === vs.status) {
+            await vs.finish()
+            const video = videoGuideRef.current
+            if (!video) return
+            video.pause()
+            playFinishAudio()
+        }
+    }
 
     const playSubTitle = () => {
         const vs = versionStatus.current
@@ -94,6 +101,12 @@ const Version: React.FC = () => {
             return newIndex + 1;
         });
     }, []);
+
+    const playFinishAudio = () => {
+        const audio = audioRef.current
+        if (!audio) return
+        audio.play(CDN + "/audio/vf.MP3")
+    }
 
     //监听完成次数
     useEffect(() => {
@@ -164,7 +177,7 @@ const Version: React.FC = () => {
                             </AnimatePresence>
                         </BlackBoard>
                         :
-                        <VideoGuide ref={videoGuideRef} src={versionStatus.current.plan?.videoSrc}></VideoGuide>
+                        <VideoGuide loop muted ref={videoGuideRef} src={versionStatus.current.plan?.videoSrc}></VideoGuide>
                     }
                 </Guide>
                 {
@@ -175,13 +188,28 @@ const Version: React.FC = () => {
                     </CountDownContainer>
                 }
             </MainContent>
-            <BottomBar $show={Boolean(status >= VersionStatusTypes.DETECT)}>
+            <BottomBar $show={Boolean(status >= VersionStatusTypes.DETECT && status < VersionStatusTypes.FINISH)}>
                 <span className='title'>Reps</span>
                 <span><span className='finish'>{finishTimes}</span><span className='total'>/{versionStatus.current.plan?.reps}</span></span>
                 <div className='progress-container'>
                     <Progress data={finishData}></Progress>
                 </div>
             </BottomBar>
+            {
+                versionStatus.current.plan && status === VersionStatusTypes.FINISH
+                &&
+                <Mask>
+                    <FinishInfo
+                        reps={versionStatus.current.plan.reps}
+                        name={versionStatus.current.plan.name}
+                        sec={versionStatus.current.timeCount}
+                        score={62}
+                        ef={62}
+                    >
+                    </FinishInfo>
+                </Mask>
+            }
+
         </Container>
     )
 }
