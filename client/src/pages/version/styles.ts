@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import styled, { keyframes } from "styled-components";
 
 export const showInfoAnimation = keyframes`
@@ -16,6 +17,19 @@ export const Container = styled.div`
     overflow: hidden;
     flex-direction: column;
     transition: all 0.3s ease-in-out;
+    position: relative;
+`
+
+export const SubtitleContainer = styled(motion.div)`
+    position: absolute;
+    left: 50%;
+    bottom: 50px;
+    background-color: #ff44b7ff;
+    z-index: 1;
+    padding: 20px 40px;
+    border-radius: 40px;
+    color: white;
+    font-size: 40px;
 `
 
 export const AudioContainer = styled.div`

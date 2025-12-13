@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer, VideoGuide, InfoContainer, MainContent, BottomBar, AudioContainer, CenterProgressContainer } from "./styles"
+import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer, VideoGuide, InfoContainer, MainContent, BottomBar, AudioContainer, CenterProgressContainer, SubtitleContainer } from "./styles"
 import { VersionStatus } from './app'
 import { AnimatePresence, motion } from "motion/react"
-import { plans, VersionStatusTypes, blackBoardSubTitle, createFinishData } from './config'
+import { plans, VersionStatusTypes, blackBoardSubTitle, createFinishData, type CheckOpsResult } from './config'
 import Mask from '@/components/Mask'
 import Scanner from '@/components/Scanner'
 import Camera from '@/components/Camera'
@@ -27,6 +27,7 @@ const Version: React.FC = () => {
     const [finishTimes, setFinishTimes] = useState(0)
     const [finishData, setFinishData] = useState<ProgressPropsData[]>(createFinishData(plans.Squat))
     const [currentFinishData, setCurrentFinishData] = useState<ProgressPropsData[]>([])
+    const [errorSubtitle, setErrorSubtitle] = useState("")
     const score = useRef(0)
     const ef = useRef(0)
 
@@ -36,7 +37,33 @@ const Version: React.FC = () => {
         vs.bindAudio(audioRef.current)
         vs.bindNextCallback(updateStatus.bind(this))
         vs.bindRecordFinishCallback(recordFinish.bind(this))
+        vs.bindCheckOpsCallback(triggerCheckOps)
         vs.start()
+    }
+
+    const triggerCheckOps = (res: CheckOpsResult) => {
+        const error = res.error
+        if (!error) return
+        const vs = versionStatus.current
+        console.log("check error", error);
+        const { audio: audioSrc, subtitle } = error
+        playOneDetectFinishAudio()
+        setTimeout(() => {
+            vs.isShowError = true
+            setErrorSubtitle(subtitle)
+            const audio = audioRef.current
+            if (audio) {
+                audio.play(audioSrc)
+            }
+            setTimeout(() => {
+                resetSubtitle()
+                vs.isShowError = false
+            }, 2000);
+        }, 1000);
+    }
+
+    const resetSubtitle = () => {
+        setErrorSubtitle("")
     }
 
     const updateStatus = useCallback(async () => {
@@ -100,7 +127,6 @@ const Version: React.FC = () => {
     }
 
     const recordFinish = useCallback((score: number) => {
-        score = Math.random() * 100
         setFinishTimes((prevFinishTimes) => {
             const newIndex = prevFinishTimes;
             setFinishData((prevFinishData) => {
@@ -154,12 +180,17 @@ const Version: React.FC = () => {
         preloadAudio(audios)
     }
 
-    //监听完成次数
-    useEffect(() => {
+    const playOneDetectFinishAudio = () => {
         const audio = audioRef.current
-        if (audio) {
+        const vs = versionStatus.current
+        if (audio && !vs.isShowError) {
             audio.play(audioSrc.getRes)
         }
+    }
+
+    //监听完成次数
+    useEffect(() => {
+        playOneDetectFinishAudio()
         if (finishTimes === finishData.length) {
             const vs = versionStatus.current
             calculateDataResults()
@@ -257,6 +288,18 @@ const Version: React.FC = () => {
                     <Progress data={finishData}></Progress>
                 </div>
             </BottomBar>
+            {
+                errorSubtitle && errorSubtitle.length > 0
+                &&
+                <SubtitleContainer
+                    key={errorSubtitle}
+                    initial={{ opacity: 0, y: 100, x: "-50%" }}
+                    animate={{ opacity: 1, y: 0, x: "-50%" }}
+                    transition={{ duration: 0.4 }}
+                >
+                    <span>{errorSubtitle}</span>
+                </SubtitleContainer>
+            }
             {
                 versionStatus.current.plan && status === VersionStatusTypes.FINISH
                 &&

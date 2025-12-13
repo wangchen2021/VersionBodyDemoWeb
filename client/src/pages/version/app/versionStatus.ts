@@ -2,7 +2,7 @@ import type { Render } from "@/pages/Version/app/render"
 import { GlobalDetector } from "@/pages/Version/app/detector"
 import { StatusFrameColors, VersionStatusTypes } from "../config"
 import * as poseDetection from '@tensorflow-models/pose-detection';
-import type { EstimatePlan } from "../config/plan";
+import type { CheckOpsResult, EstimatePlan } from "../config/plan";
 import type { AudioSwitchExpose } from "@/components/AudioSwitch";
 
 //状态机
@@ -24,6 +24,8 @@ export class VersionStatus {
     audio: AudioSwitchExpose | null = null
     timeCount = 0
     startDetectTime!: number
+    isShowError = false
+    checkOpsCallback!: (res: CheckOpsResult) => any
 
     constructor() {
         this.status = VersionStatusTypes.WAIT_INIT
@@ -50,6 +52,10 @@ export class VersionStatus {
 
     bindRender(render: Render) {
         this.render = render
+    }
+
+    bindCheckOpsCallback(fn: (res: CheckOpsResult) => any) {
+        this.checkOpsCallback = fn
     }
 
     updatePose(pose: poseDetection.Pose[]) {
@@ -125,23 +131,37 @@ export class VersionStatus {
 
     recordFinish() {
         console.log("finish one rep");
-        const { plan, recordFinishCallback, actionScore, pose } = this
+        let { plan, recordFinishCallback, actionScore, pose } = this
         if (!plan || !pose || !pose[0]) return
         const finishCheckOps = plan.checkOps.finish
 
         //check
         finishCheckOps.forEach(fn => {
-            fn(pose[0].keypoints)
+            const res = fn(pose[0].keypoints)
+            if (res) {
+                if (!this.isShowError) {
+                    this.triggerOps(res)
+                }
+                actionScore = actionScore - res.score
+            }
         })
 
         //finish callback
         recordFinishCallback.forEach(fn => {
-            fn(actionScore)
+            fn(actionScore >= 0 ? actionScore : 0)
         });
 
         //reset
         this.startRecordAction = false
         this.actionScore = 100
+    }
+
+
+    triggerOps(res: CheckOpsResult) {
+        if (this.isShowError) return
+        if (this.checkOpsCallback) {
+            this.checkOpsCallback(res)
+        }
     }
 
     cvCheckWrong() {

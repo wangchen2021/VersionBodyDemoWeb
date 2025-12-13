@@ -9,6 +9,14 @@ export type CheckOps = {
     finish: any[]
 }
 
+export interface CheckOpsResult {
+    score: number,
+    error: {
+        subtitle: string,
+        audio: string
+    } | null
+}
+
 export interface EstimatePlan {
     name: string,
     cn: string,
@@ -20,6 +28,20 @@ export interface EstimatePlan {
     checkOps: CheckOps
 }
 
+export const bodyErrors = {
+    squat_feet_close: {
+        subtitle: "Spread your feet more",
+        audio: CDN + "/audio/squat_feet_close.MP3",
+    },
+    squat_feet_far: {
+        subtitle: "Bring your feet closer",
+        audio: CDN + "/audio/squat_feet_far.MP3",
+    },
+    not_straight_back: {
+        subtitle: "Keep your back straight",
+        audio: CDN + "/audio/not_straight_back.MP3",
+    }
+}
 
 const SquatTrigger = (points: Keypoint[]) => {
     if (!points || points.length === 0) return false
@@ -50,27 +72,47 @@ const SquatActionEnd = (points: Keypoint[]) => {
     return !SquatTrigger(points)
 }
 
-const checkFoots = (points: Keypoint[]) => {
-    if (!points || points.length === 0) return false
+const checkFoots = (points: Keypoint[]): CheckOpsResult => {
+    if (!points || points.length === 0) return {
+        score: 10,
+        error: null
+    }
     const angle = calculateAngleOfLegs(points)
     if (angle < 30) {
         //脚太近
-        return false
+        return {
+            error: bodyErrors.squat_feet_close,
+            score: (40 - angle) * 2
+        }
     }
-    if (angle > 70) {
+    if (angle > 50) {
         //脚太远
-        return false
+        return {
+            error: bodyErrors.squat_feet_far,
+            score: (angle - 50) * 2,
+        }
     }
-    return true
+    return {
+        score: Math.abs(angle - 40) * 2,
+        error: null
+    }
 }
 
-const checkVerticalSpine = (points: Keypoint[]) => {
+const checkVerticalSpine = (points: Keypoint[]): CheckOpsResult => {
     const v1 = getVector(points[6], points[5])
-    const v2 = getVector(points[17], points[18])
+    const v2 = getVector(points[12], points[11])
     const angle = calculateVectorAngle(v1, v2)
-    const diff = Math.abs(90 - angle)
-    if (diff > 15) {
+    const diff = Math.abs(angle)
+    if (diff > 10) {
         //背不直
+        return {
+            error: bodyErrors.not_straight_back,
+            score: Math.min((diff - 10) * 3, 100),
+        }
+    }
+    return {
+        score: diff * 2,
+        error: null
     }
 }
 
@@ -84,7 +126,6 @@ export const createFinishData = (plan: EstimatePlan) => {
     }
     return res
 }
-
 
 export const plans: Record<string, EstimatePlan> = {
     Squat: {
