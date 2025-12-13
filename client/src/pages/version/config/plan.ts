@@ -9,12 +9,15 @@ export type CheckOps = {
     finish: any[]
 }
 
+export interface BodyErrorType {
+    name: "squat_feet_close" | "squat_feet_far" | "not_straight_back"
+    subtitle: string
+    audio: string
+}
+
 export interface CheckOpsResult {
     score: number,
-    error: {
-        subtitle: string,
-        audio: string
-    } | null
+    error: BodyErrorType | null
 }
 
 export interface EstimatePlan {
@@ -28,16 +31,19 @@ export interface EstimatePlan {
     checkOps: CheckOps
 }
 
-export const bodyErrors = {
+export const bodyErrors: Record<string, BodyErrorType> = {
     squat_feet_close: {
+        name: "squat_feet_close",
         subtitle: "Spread your feet more",
         audio: CDN + "/audio/squat_feet_close.MP3",
     },
     squat_feet_far: {
+        name: "squat_feet_far",
         subtitle: "Bring your feet closer",
         audio: CDN + "/audio/squat_feet_far.MP3",
     },
     not_straight_back: {
+        name: "not_straight_back",
         subtitle: "Keep your back straight",
         audio: CDN + "/audio/not_straight_back.MP3",
     }

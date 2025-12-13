@@ -25,7 +25,7 @@ export class VersionStatus {
     timeCount = 0
     startDetectTime!: number
     isShowError = false
-    checkOpsCallback!: (res: CheckOpsResult) => any
+    checkOpsCallback!: (res: CheckOpsResult, render: Render) => any
 
     constructor() {
         this.status = VersionStatusTypes.WAIT_INIT
@@ -54,7 +54,7 @@ export class VersionStatus {
         this.render = render
     }
 
-    bindCheckOpsCallback(fn: (res: CheckOpsResult) => any) {
+    bindCheckOpsCallback(fn: (res: CheckOpsResult, render: Render) => any) {
         this.checkOpsCallback = fn
     }
 
@@ -160,7 +160,7 @@ export class VersionStatus {
     triggerOps(res: CheckOpsResult) {
         if (this.isShowError) return
         if (this.checkOpsCallback) {
-            this.checkOpsCallback(res)
+            this.checkOpsCallback(res, this.render!)
         }
     }
 

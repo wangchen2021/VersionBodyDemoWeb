@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Container, Guide, CountDownContainer, BlackBoard, CameraContainer, VideoGuide, InfoContainer, MainContent, BottomBar, AudioContainer, CenterProgressContainer, SubtitleContainer } from "./styles"
-import { VersionStatus } from './app'
+import { Render, VersionStatus } from './app'
 import { AnimatePresence, motion } from "motion/react"
 import { plans, VersionStatusTypes, blackBoardSubTitle, createFinishData, type CheckOpsResult } from './config'
 import Mask from '@/components/Mask'
@@ -41,7 +41,7 @@ const Version: React.FC = () => {
         vs.start()
     }
 
-    const triggerCheckOps = (res: CheckOpsResult) => {
+    const triggerCheckOps = (res: CheckOpsResult, render: Render) => {
         const error = res.error
         if (!error) return
         const vs = versionStatus.current
@@ -50,6 +50,7 @@ const Version: React.FC = () => {
         playOneDetectFinishAudio()
         setTimeout(() => {
             vs.isShowError = true
+            render.setRenderError(error)
             setErrorSubtitle(subtitle)
             const audio = audioRef.current
             if (audio) {
@@ -57,9 +58,10 @@ const Version: React.FC = () => {
             }
             setTimeout(() => {
                 resetSubtitle()
+                render.setRenderError(null)
                 vs.isShowError = false
             }, 1500);
-        }, 1000);
+        }, 500);
     }
 
     const resetSubtitle = () => {
@@ -153,15 +155,12 @@ const Version: React.FC = () => {
             tempScore += item.value
             if (tempScore > 60) tempEf++
         }
-        tempScore = Math.floor(tempScore / 10)
-        tempEf = Math.floor(tempEf * 100 / 10)
-        tempEf = tempEf - 10 + Math.random() * 20
-        score.current = tempScore
-        ef.current = Math.min(Math.floor(tempEf), 100)
+        score.current = Math.floor(tempScore / 10)
+        ef.current = Math.floor(tempEf * 100 / 10)
         console.log({
             finishData,
-            score,
-            ef
+            score: score.current,
+            ef: ef.current
         });
     }
 
