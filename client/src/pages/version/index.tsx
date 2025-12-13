@@ -58,7 +58,7 @@ const Version: React.FC = () => {
             setTimeout(() => {
                 resetSubtitle()
                 vs.isShowError = false
-            }, 2000);
+            }, 1500);
         }, 1000);
     }
 
